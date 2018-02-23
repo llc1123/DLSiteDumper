@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include <boost/crc.hpp>
+//#include <boost/crc.hpp>
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -50,6 +50,11 @@ int _tmain(int argc, const char* argv[])
 
 	if (argc < 2)
 		return -1;
+	
+	size_t pages = 0;
+
+	if (argc > 2)
+		pages = atoi(argv[2]);
 
 	const DWORD viewer_process_id = atoi(argv[1]);
 
@@ -113,17 +118,17 @@ int _tmain(int argc, const char* argv[])
 
 	// It seems it takes some time for messages to propagate to other buttons, so wait until the next button is enabled
 	// This will prevent the bug where if the Viewer was opened to the last page, it would only export the first image
-	if (GetWindowLong(viewer_button_next, GWL_STYLE) & WS_DISABLED)
-	{
-		Sleep(1000);
-	}
+	//if (GetWindowLong(viewer_button_next, GWL_STYLE) & WS_DISABLED)
+	//{
+	//	Sleep(100);
+	//}
 
 	std::vector<char> image;
 
-	std::set<boost::crc_32_type::value_type> checksums;
+	//std::set<boost::crc_32_type::value_type> checksums;
 
 	// Continue until the next button becomes disabled, indicating the last image
-	for (size_t pages = 0;; pages++)
+	for (pages;; pages++)
 	{
 		// As a hack, the dimensions of the images are determined by
 		// looking at the size of the scroll area
@@ -167,20 +172,20 @@ int _tmain(int argc, const char* argv[])
 						continue;
 					}
 					printf("RPM success\n");
-					boost::crc_32_type crc32;
-					crc32.process_bytes(&image[0], image.size());
-					if (!checksums.insert(crc32.checksum()).second) {
-						printf("Invalid checksum\n");
-						continue;
-					}
-					printf("Check passed! \n");
+					//boost::crc_32_type crc32;
+					//crc32.process_bytes(&image[0], image.size());
+					//if (!checksums.insert(crc32.checksum()).second) {
+					//	printf("Invalid checksum\n");
+					//	continue;
+					//}
+					//printf("Check passed! \n");
 				}
 				address = (char*)mbi.BaseAddress + mbi.RegionSize;
 			}
 
 			char filename[FILENAME_MAX];
 
-			_snprintf(filename, FILENAME_MAX, "%03u_%p.bmp", pages, mbi.BaseAddress);
+			_snprintf(filename, FILENAME_MAX, "%03u.bmp", pages);
 
 			FILE *fp = fopen(filename, "wb");
 
