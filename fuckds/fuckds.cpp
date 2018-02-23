@@ -12,6 +12,7 @@
 
 #include <set>
 #include <vector>
+#include <tlhelp32.h>
 
 // Compact some stuff so it can all be sent by a pointer to get_process_window
 struct process_window_helper
@@ -48,15 +49,29 @@ int _tmain(int argc, const char* argv[])
 	static const int VIEWER_AREA_PARENT_CODE = 0xE900;
 	static const int VIEWER_AREA_MAIN_CODE = 0xE900;
 
-	if (argc < 2)
-		return -1;
-	
 	size_t pages = 0;
 
-	if (argc > 2)
-		pages = atoi(argv[2]);
+	if (argc > 1)
+		pages = atoi(argv[1]);
 
-	const DWORD viewer_process_id = atoi(argv[1]);
+	DWORD viewer_process_id;
+
+	PROCESSENTRY32 entry;
+	entry.dwSize = sizeof(PROCESSENTRY32);
+
+	HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
+
+	if (Process32First(snapshot, &entry) == TRUE)
+	{
+		while (Process32Next(snapshot, &entry) == TRUE)
+		{
+			if (stricmp(entry.szExeFile, "DLsiteViewer.exe") == 0)
+			{
+				 viewer_process_id = entry.th32ProcessID;
+			}
+		}
+	}
+	CloseHandle(snapshot);
 
 	printf("Try to open process... %d\n",viewer_process_id);
 
